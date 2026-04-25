@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu espacio ♡</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:       #b5c76a;
+    --olive-mid:   #a0b356;
+    --olive-light: #8fa048;
+    --olive-pale:  #c8d88a;
+    --cream:       #f5f0eb;
+    --beige:       #e8ddd4;
+    --sand:        #d4c4b5;
+    --terracotta:  #c4a882;
+    --text:        #2b2e22;
+    --text-light:  #6b7260;
+    --accent:      #8fa048;
+    --card-bg:     rgba(250,247,244,0.97);
+    --card-border: rgba(160,179,86,0.22);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #b5c76a;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed; left: 0; top: 0; width: 190px; height: 100vh;
+    background: linear-gradient(180deg, #8aab38 0%, #7a9a2e 50%, #6a8a24 100%);
+    overflow: hidden; z-index: 10;
+  }
+  .sidebar::after {
+    content: ''; position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1490750967868-88df5691cc41?w=400&q=80') center/cover no-repeat;
+    opacity: 0.35; mix-blend-mode: luminosity;
+  }
+  .sidebar-text {
+    position: absolute; top: 28px; left: 20px; z-index: 3;
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 17px; color: rgba(245,240,235,0.92); letter-spacing: 0.03em;
+  }
+  .sidebar-deco {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 220px; z-index: 2;
+    background: linear-gradient(0deg, rgba(36,44,32,0.9) 0%, transparent 100%);
+  }
+
+  /* ── MAIN ── */
+  .main { margin-left: 190px; min-height: 100vh; padding: 0; }
+
+  /* ── TOPBAR ── */
+  .topbar { display: flex; justify-content: flex-end; padding: 16px 32px 0; }
+  .weather-widget {
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    background: rgba(255,255,255,0.28); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 20px;
+    padding: 6px 14px; font-size: 13px; color: rgba(50,60,20,0.9);
+    transition: background 0.2s;
+  }
+  .weather-widget:hover { background: rgba(255,255,255,0.38); }
+  .weather-temp { font-weight: 500; font-size: 14px; color: rgba(40,50,15,0.95); }
+  .weather-city { font-size: 10.5px; color: rgba(50,60,20,0.7); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(42,50,34,0.5); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card-bg); border-radius: 18px; border: 1px solid var(--card-border);
+    padding: 28px 30px; width: 320px; box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  }
+  .modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--text); margin-bottom: 16px; }
+  .modal label { font-size: 11.5px; color: var(--text-light); display: block; margin-bottom: 4px; letter-spacing: 0.04em; }
+  .modal input {
+    width: 100%; padding: 8px 12px; border: 1.5px solid var(--beige);
+    border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    color: var(--text); margin-bottom: 12px; outline: none; background: white; transition: border-color 0.2s;
+  }
+  .modal input:focus { border-color: var(--olive-light); }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .btn-cancel { padding: 7px 16px; border: 1px solid var(--beige); border-radius: 20px; background: none; font-size: 12px; color: var(--text-light); cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-save { padding: 7px 16px; border: none; border-radius: 20px; background: var(--olive-mid); color: white; font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+  /* ── HERO ── */
+  .hero { text-align: center; padding: 18px 0 16px; animation: fadeUp 0.7s ease both; }
+  .hero h1 { font-family: 'Cormorant Garamond', serif; font-size: 44px; font-weight: 400; color: rgba(50,60,20,0.95); letter-spacing: -0.01em; }
+  .hero h1 .heart { font-size: 30px; opacity: 0.65; }
+  .hero p { color: rgba(60,72,24,0.75); margin-top: 5px; font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 300; font-style: italic; }
+
+  /* ── SEARCH ── */
+  .search-wrap { display: flex; justify-content: center; padding: 0 32px 18px; animation: fadeUp 0.85s ease both; }
+  .search-bar {
+    display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.95);
+    border: 1.5px solid rgba(255,255,255,0.6); border-radius: 50px; padding: 10px 18px;
+    width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .search-bar:focus-within { border-color: var(--olive-pale); box-shadow: 0 6px 24px rgba(0,0,0,0.2); }
+  .search-bar input { flex: 1; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--text); background: transparent; }
+  .search-bar input::placeholder { color: var(--text-light); opacity: 0.7; }
+
+  /* ── GRID ── */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 32px 16px; animation: fadeUp 0.95s ease both; }
+  .card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--card-border); overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  .card-title { font-size: 10.5px; font-weight: 500; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+
+  /* ── APPS ── */
+  .quick-access { padding: 18px 20px; }
+  .apps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 11px; }
+  .app-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; text-decoration: none; color: inherit; transition: transform 0.15s; }
+  .app-item:hover { transform: translateY(-2px); }
+  .app-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; }
+  .app-icon img { width: 100%; height: 100%; object-fit: contain; padding: 5px; }
+  .app-name { font-size: 10px; color: var(--text-light); text-align: center; }
+  .app-add { background: rgba(160,179,86,0.14); border: 1.5px dashed var(--sand); }
+
+  /* ── AGENDA CALENDAR ── */
+  .calendar-card { padding: 16px 18px; display: flex; flex-direction: column; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cal-title-wrap { display: flex; align-items: center; gap: 8px; }
+  .cal-title { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 400; color: var(--text); }
+  .cal-gcal-btn {
+    font-size: 10px; font-family: 'DM Sans', sans-serif; padding: 4px 10px;
+    background: rgba(160,179,86,0.14); border: 1px solid var(--card-border);
+    border-radius: 20px; cursor: pointer; color: var(--text-light); text-decoration: none;
+    display: flex; align-items: center; gap: 4px; transition: background 0.15s;
+  }
+  .cal-gcal-btn:hover { background: rgba(160,179,86,0.25); }
+
+  /* Google Calendar connect banner */
+  .gcal-connect {
+    background: rgba(160,179,86,0.12); border: 1px dashed var(--olive-pale);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 10px;
+    font-size: 11.5px; color: var(--text-light); line-height: 1.6;
+  }
+  .gcal-connect strong { color: var(--text); }
+  .gcal-connect a { color: var(--olive-mid); font-weight: 500; }
+
+  /* Add event form */
+  .add-event-row {
+    display: flex; gap: 6px; align-items: center;
+    padding-top: 8px; border-top: 1px solid var(--card-border); margin-top: 6px;
+  }
+  .add-event-input {
+    flex: 1; border: none; outline: none; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; color: var(--text-light); background: transparent;
+  }
+  .add-event-input::placeholder { opacity: 0.6; }
+  .add-event-date {
+    border: 1px solid var(--beige); border-radius: 6px; padding: 3px 6px;
+    font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--text-light);
+    outline: none; background: white; cursor: pointer;
+  }
+  .add-event-btn { width: 20px; height: 20px; background: var(--olive-light); border: none; border-radius: 50%; cursor: pointer; font-size: 13px; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+  .add-event-btn:hover { background: #b5c76a; }
+
+  /* Agenda items */
+  .agenda-list { display: flex; flex-direction: column; gap: 5px; flex: 1; overflow-y: auto; max-height: 190px; }
+  .agenda-empty { font-size: 12px; color: var(--text-light); font-style: italic; text-align: center; padding: 20px 0; opacity: 0.6; }
+  .agenda-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 7px 10px;
+    background: rgba(160,179,86,0.09); border-radius: 9px;
+    border-left: 3px solid var(--olive-light); position: relative;
+    transition: background 0.15s;
+  }
+  .agenda-item:hover { background: rgba(160,179,86,0.16); }
+  .agenda-item:hover .agenda-del { opacity: 1; }
+  .agenda-date-badge {
+    min-width: 36px; text-align: center; flex-shrink: 0;
+  }
+  .agenda-date-day { font-size: 17px; font-weight: 500; font-family: 'Cormorant Garamond', serif; color: var(--olive); line-height: 1; }
+  .agenda-date-mon { font-size: 9px; color: var(--text-light); letter-spacing: 0.05em; text-transform: uppercase; }
+  .agenda-info { flex: 1; }
+  .agenda-name { font-size: 12.5px; color: var(--text); font-weight: 400; }
+  .agenda-time { font-size: 10.5px; color: var(--text-light); margin-top: 1px; }
+  .agenda-del { opacity: 0; background: none; border: none; color: var(--sand); cursor: pointer; font-size: 14px; padding: 0; transition: opacity 0.15s; align-self: center; }
+  .agenda-today-label {
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: white; background: var(--olive-light); border-radius: 4px;
+    padding: 1px 5px; align-self: center;
+  }
+
+  /* ── PLAN DEL DÍA ── */
+  .plan-card { display: grid; grid-template-columns: 1fr 1fr; }
+  .plan-image { overflow: hidden; }
+  .plan-image img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.85) brightness(0.97); }
+  .plan-content { padding: 16px 14px 12px; display: flex; flex-direction: column; }
+  .plan-title { font-size: 10.5px; font-weight: 500; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .task-list { list-style: none; display: flex; flex-direction: column; gap: 5px; flex: 1; overflow-y: auto; max-height: 150px; }
+  .task-item { display: flex; align-items: center; gap: 7px; }
+  .task-check { width: 14px; height: 14px; border: 1.5px solid var(--sand); border-radius: 50%; flex-shrink: 0; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 7px; color: transparent; }
+  .task-item.done .task-check { background: var(--olive-light); border-color: var(--olive-light); color: white; }
+  .task-label { flex: 1; outline: none; background: transparent; border: none; font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text); cursor: text; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+  .task-label:focus { border-bottom-color: var(--beige); }
+  .task-item.done .task-label { text-decoration: line-through; opacity: 0.4; }
+  .task-delete { opacity: 0; background: none; border: none; cursor: pointer; color: var(--sand); font-size: 14px; padding: 0 2px; transition: opacity 0.15s; line-height: 1; }
+  .task-item:hover .task-delete { opacity: 1; }
+  .add-task-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--beige); }
+  .add-task-input { flex: 1; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 11.5px; color: var(--text-light); background: transparent; }
+  .add-task-input::placeholder { opacity: 0.6; }
+  .add-task-btn { width: 18px; height: 18px; background: var(--olive-light); border: none; border-radius: 50%; cursor: pointer; font-size: 12px; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+  .add-task-btn:hover { background: #b5c76a; }
+
+  /* ── NOTES ── */
+  .notes-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  .notes-title { font-size: 10.5px; font-weight: 500; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 9px; }
+  .notes-text { font-size: 12.5px; color: var(--text); line-height: 1.75; outline: none; min-height: 70px; }
+  .notes-image { width: 105px; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+  .notes-image img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.8) brightness(0.98); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(138,148,120,0.4); border-radius: 10px; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+  <div class="sidebar-text">tu espacio ♡</div>
+  <div class="sidebar-deco"></div>
+</div>
+
+<!-- ══ WEATHER MODAL ══ -->
+<div class="modal-overlay" id="weather-modal">
+  <div class="modal">
+    <h3>Editar clima ☀️</h3>
+    <label>Ciudad</label>
+    <input type="text" id="edit-city" placeholder="Valencia">
+    <label>Temperatura</label>
+    <input type="text" id="edit-temp" placeholder="22°C">
+    <label>Icono emoji</label>
+    <input type="text" id="edit-icon" placeholder="☀️">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeWeatherModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveWeather()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="weather-widget" onclick="openWeatherModal()" title="Editar clima">
+      <span id="weather-icon">☀️</span>
+      <div>
+        <div class="weather-temp" id="weather-temp">22°C</div>
+        <div class="weather-city" id="weather-city">Valencia</div>
+      </div>
+      <span style="font-size:10px;opacity:0.5;margin-left:2px;">✎</span>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Hola, Olga <span class="heart">♡</span></h1>
+    <p>Tu momento ha llegado. Es hora de disfrutar de todo lo bueno que mereces en tu vida.</p>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <div class="search-bar">
+      <span style="color:var(--text-light);font-size:14px;">🔍</span>
+      <input type="text" id="search-input" placeholder="Buscar en Google o escribir una URL" />
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid">
+
+    <!-- Accesos rápidos -->
+    <div class="card quick-access">
+      <div class="card-title">Accesos rápidos</div>
+      <div class="apps-grid" id="apps-grid">
+        <a href="https://mail.google.com" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#fff4f4;"><img src="https://www.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png" alt="Gmail"></div>
+          <span class="app-name">Gmail</span>
+        </a>
+        <a href="https://drive.google.com" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#f4f8ff;"><img src="https://www.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png" alt="Drive"></div>
+          <span class="app-name">Drive</span>
+        </a>
+        <a href="https://calendar.google.com" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#f4f8ff;"><img src="https://www.gstatic.com/images/branding/product/1x/calendar_2020q4_48dp.png" alt="Cal"></div>
+          <span class="app-name">Calendario</span>
+        </a>
+        <a href="https://notion.so" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#f8f8f8;"><img src="https://www.notion.so/images/favicon.ico" alt="Notion"></div>
+          <span class="app-name">Notion</span>
+        </a>
+        <a href="https://pinterest.com" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#fff4f4;"><img src="https://s.pinimg.com/webapp/favicon_16-dfc935d2.png" alt="Pinterest"></div>
+          <span class="app-name">Pinterest</span>
+        </a>
+        <a href="https://webflow.com" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#eef4ff;"><img src="https://assets-global.website-files.com/5d3e265ac89f6a3e64292efc/5d3e29e6427c6ffab2ed99fb_favicon.png" alt="Webflow"></div>
+          <span class="app-name">Webflow</span>
+        </a>
+        <a href="https://canva.com" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#f4fff8;"><img src="https://static.canva.com/web/images/8439b51bb7a19f6e65ce1064bc37c197.svg" alt="Canva"></div>
+          <span class="app-name">Canva</span>
+        </a>
+        <a href="https://instagram.com" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#fff4f8;"><img src="https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png" alt="Insta"></div>
+          <span class="app-name">Instagram</span>
+        </a>
+        <a href="https://web.whatsapp.com" target="_blank" class="app-item">
+          <div class="app-icon" style="background:#f4fff4;"><img src="https://static.whatsapp.net/rsrc.php/v3/yI/r/VGkUbt_aX7k.png" alt="WA"></div>
+          <span class="app-name">WhatsApp</span>
+        </a>
+        <div class="app-item" onclick="addApp()">
+          <div class="app-icon app-add" style="font-size:20px;color:var(--sand);">+</div>
+          <span class="app-name">Añadir</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agenda Calendar -->
+    <div class="card calendar-card">
+      <div class="cal-header">
+        <div class="cal-title-wrap">
+          <span style="font-size:14px;">📅</span>
+          <span class="cal-title">Próximos eventos</span>
+        </div>
+        <a href="https://calendar.google.com" target="_blank" class="cal-gcal-btn">
+          <img src="https://www.gstatic.com/images/branding/product/1x/calendar_2020q4_48dp.png" style="width:11px;height:11px;">
+          Google Calendar
+        </a>
+      </div>
+
+      <!-- Info para conectar Google Calendar via ICS -->
+      <div class="gcal-connect" id="gcal-banner">
+        <strong>Conecta tu Google Calendar:</strong> Ve a
+        <a href="https://calendar.google.com/calendar/r/settings" target="_blank">Configuración de Google Calendar</a>
+        → tu calendario → "Dirección secreta en formato iCal" → copia la URL y pégala aquí:
+        <div style="display:flex;gap:6px;margin-top:7px;">
+          <input type="text" id="ical-url-input" placeholder="https://calendar.google.com/calendar/ical/..." 
+            style="flex:1;padding:5px 10px;border:1px solid var(--beige);border-radius:8px;font-size:11px;outline:none;font-family:'DM Sans',sans-serif;color:var(--text);">
+          <button onclick="saveIcalUrl()" style="padding:5px 12px;background:var(--olive-light);border:none;border-radius:8px;color:white;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">
+            Guardar
+          </button>
+        </div>
+      </div>
+
+      <div class="agenda-list" id="agenda-list">
+        <div class="agenda-empty" id="agenda-empty">Añade eventos manualmente o conecta tu Google Calendar ↑</div>
+      </div>
+
+      <!-- Añadir evento manual -->
+      <div class="add-event-row">
+        <span style="font-size:11px;color:var(--sand);">+</span>
+        <input type="text" class="add-event-input" id="new-event-input" placeholder="Nuevo evento...">
+        <input type="date" class="add-event-date" id="new-event-date">
+        <input type="time" class="add-event-date" id="new-event-time" style="width:72px;">
+        <button class="add-event-btn" onclick="addEvent()">↵</button>
+      </div>
+    </div>
+
+    <!-- Plan del día -->
+    <div class="card plan-card">
+      <div class="plan-image">
+        <!-- Imagen de naturaleza: bosque con luz filtrada -->
+        <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=400&q=80" alt="naturaleza">
+      </div>
+      <div class="plan-content">
+        <div class="plan-title">✦ Plan del día</div>
+        <ul class="task-list" id="task-list"></ul>
+        <div class="add-task-row">
+          <span style="font-size:11px;color:var(--sand);">+</span>
+          <input type="text" class="add-task-input" id="new-task-input" placeholder="Añadir tarea...">
+          <button class="add-task-btn" onclick="addTask()">↵</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notas -->
+    <div class="notes-card">
+      <div>
+        <div class="notes-title">✎ Notas rápidas</div>
+        <div class="notes-text" id="notes-area" contenteditable="true">Ideas para nuevo proyecto:<br>• Colores tierra<br>• Tipografías suaves<br>• Inspiración: Pinterest</div>
+      </div>
+      <div class="notes-image">
+        <img src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=200&q=80" alt="naturaleza">
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+</div><!-- /main -->
+
+<script>
+// ══ SEARCH ══
+document.getElementById('search-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const q = this.value.trim(); if (!q) return;
+    if (q.startsWith('http') || (q.includes('.') && !q.includes(' '))) {
+      window.location.href = q.startsWith('http') ? q : 'https://' + q;
+    } else { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(q); }
+  }
+});
+
+// ══ WEATHER ══
+function loadWeather() {
+  document.getElementById('weather-city').textContent = localStorage.getItem('w-city') || 'Valencia';
+  document.getElementById('weather-temp').textContent = localStorage.getItem('w-temp') || '22°C';
+  document.getElementById('weather-icon').textContent = localStorage.getItem('w-icon') || '☀️';
+}
+function openWeatherModal() {
+  document.getElementById('edit-city').value = document.getElementById('weather-city').textContent;
+  document.getElementById('edit-temp').value = document.getElementById('weather-temp').textContent;
+  document.getElementById('edit-icon').value = document.getElementById('weather-icon').textContent;
+  document.getElementById('weather-modal').classList.add('open');
+}
+function closeWeatherModal() { document.getElementById('weather-modal').classList.remove('open'); }
+function saveWeather() {
+  localStorage.setItem('w-city', document.getElementById('edit-city').value.trim() || 'Valencia');
+  localStorage.setItem('w-temp', document.getElementById('edit-temp').value.trim() || '22°C');
+  localStorage.setItem('w-icon', document.getElementById('edit-icon').value.trim() || '☀️');
+  loadWeather(); closeWeatherModal();
+}
+document.getElementById('weather-modal').addEventListener('click', function(e) { if (e.target === this) closeWeatherModal(); });
+loadWeather();
+
+// ══ AGENDA EVENTS ══
+const monthShort = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function loadEvents() {
+  const s = localStorage.getItem('agenda-events-olga');
+  return s ? JSON.parse(s) : [];
+}
+function saveEvents(evs) {
+  localStorage.setItem('agenda-events-olga', JSON.stringify(evs));
+}
+function renderAgenda() {
+  const list = document.getElementById('agenda-list');
+  const empty = document.getElementById('agenda-empty');
+  let evs = loadEvents();
+
+  // Sort by date, only future or today
+  const now = new Date(); now.setHours(0,0,0,0);
+  evs = evs.filter(e => new Date(e.date + 'T00:00:00') >= now);
+  evs.sort((a,b) => a.date.localeCompare(b.date));
+
+  // Remove old items (keep the empty msg and add-row)
+  list.querySelectorAll('.agenda-item').forEach(el => el.remove());
+
+  if (evs.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().slice(0,10);
+  const tomorrowStr = new Date(today.getTime() + 86400000).toISOString().slice(0,10);
+
+  evs.slice(0, 8).forEach((ev, idx) => {
+    const d = new Date(ev.date + 'T00:00:00');
+    const item = document.createElement('div');
+    item.className = 'agenda-item';
+
+    const badge = document.createElement('div');
+    badge.className = 'agenda-date-badge';
+    badge.innerHTML = `<div class="agenda-date-day">${d.getDate()}</div><div class="agenda-date-mon">${monthShort[d.getMonth()]}</div>`;
+
+    const info = document.createElement('div');
+    info.className = 'agenda-info';
+    info.innerHTML = `<div class="agenda-name">${ev.name}</div>${ev.time ? `<div class="agenda-time">🕐 ${ev.time}</div>` : ''}`;
+
+    const del = document.createElement('button');
+    del.className = 'agenda-del'; del.innerHTML = '×'; del.title = 'Eliminar';
+    del.onclick = () => {
+      const all = loadEvents();
+      const i = all.findIndex(x => x.date === ev.date && x.name === ev.name);
+      if (i > -1) all.splice(i,1);
+      saveEvents(all); renderAgenda();
+    };
+
+    item.appendChild(badge); item.appendChild(info);
+    if (ev.date === todayStr) {
+      const lbl = document.createElement('span'); lbl.className = 'agenda-today-label'; lbl.textContent = 'Hoy';
+      item.appendChild(lbl);
+    } else if (ev.date === tomorrowStr) {
+      const lbl = document.createElement('span'); lbl.className = 'agenda-today-label';
+      lbl.textContent = 'Mañana'; lbl.style.background = 'var(--terracotta)';
+      item.appendChild(lbl);
+    }
+    item.appendChild(del);
+    list.insertBefore(item, document.getElementById('agenda-empty'));
+  });
+}
+
+function addEvent() {
+  const name = document.getElementById('new-event-input').value.trim();
+  const date = document.getElementById('new-event-date').value;
+  const time = document.getElementById('new-event-time').value;
+  if (!name || !date) { document.getElementById('new-event-input').focus(); return; }
+  const evs = loadEvents();
+  evs.push({name, date, time: time||''});
+  saveEvents(evs);
+  document.getElementById('new-event-input').value = '';
+  document.getElementById('new-event-date').value = '';
+  document.getElementById('new-event-time').value = '';
+  renderAgenda();
+}
+document.getElementById('new-event-input').addEventListener('keydown', e => { if (e.key === 'Enter') addEvent(); });
+
+// Set today as default date
+const todayVal = new Date().toISOString().slice(0,10);
+document.getElementById('new-event-date').value = todayVal;
+
+// ══ iCAL / GOOGLE CALENDAR ══
+function saveIcalUrl() {
+  const url = document.getElementById('ical-url-input').value.trim();
+  if (!url) return;
+  localStorage.setItem('ical-url', url);
+  fetchIcal(url);
+}
+
+function setBannerStatus(msg, ok) {
+  const b = document.getElementById('gcal-banner');
+  if (!b) return;
+  b.innerHTML = msg;
+}
+
+async function fetchIcal(url) {
+  if (!url) return;
+  setBannerStatus('<em style="color:var(--text-light);font-size:11px;">Conectando con Google Calendar...</em>');
+
+  // Try multiple CORS proxies in order
+  const proxies = [
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  ];
+
+  for (const makeProxy of proxies) {
+    try {
+      const res = await fetch(makeProxy(url), { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
+      const text = await res.text();
+      // allorigins wraps in JSON, others return raw
+      let ical = text;
+      try { const j = JSON.parse(text); if (j.contents) ical = j.contents; } catch(e) {}
+      if (ical.includes('BEGIN:VCALENDAR')) {
+        parseIcal(ical);
+        return;
+      }
+    } catch(e) { continue; }
+  }
+
+  setBannerStatus(`<strong style="color:#c0392b;">No se pudo conectar.</strong> <span style="font-size:11px;color:var(--text-light);">Comprueba que la URL es correcta y que la página está alojada en internet (no como archivo local).</span> <a href="#" onclick="saveIcalUrl();return false;" style="color:var(--olive-mid);font-size:11px;">Reintentar</a>`);
+}
+
+function parseIcal(text) {
+  const events = loadEvents();
+  const eventsFromGcal = [];
+  // Unfold long lines (iCal spec: continuation lines start with space/tab)
+  const unfolded = text.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '');
+  const lines = unfolded.split(/\r\n|\n|\r/);
+  let cur = null;
+  for (const line of lines) {
+    if (line === 'BEGIN:VEVENT') { cur = {}; }
+    else if (line === 'END:VEVENT' && cur) {
+      if (cur.name && cur.date) eventsFromGcal.push(cur);
+      cur = null;
+    } else if (cur) {
+      if (line.startsWith('SUMMARY:')) {
+        cur.name = line.slice(8).trim();
+      } else if (line.startsWith('DTSTART')) {
+        // Handle DTSTART;TZID=... or DTSTART:
+        const val = line.includes(':') ? line.split(':').slice(1).join(':') : '';
+        if (val && val.length >= 8) {
+          cur.date = `${val.slice(0,4)}-${val.slice(4,6)}-${val.slice(6,8)}`;
+          if (val.length > 8 && val.includes('T')) {
+            const t = val.slice(9);
+            cur.time = `${t.slice(0,2)}:${t.slice(2,4)}`;
+          }
+        }
+      }
+    }
+  }
+  const today = new Date().toISOString().slice(0,10);
+  eventsFromGcal.forEach(ev => {
+    if (ev.date >= today && !events.find(x => x.name === ev.name && x.date === ev.date)) {
+      events.push(ev);
+    }
+  });
+  saveEvents(events);
+  const count = eventsFromGcal.filter(e => e.date >= today).length;
+  document.getElementById('gcal-banner').innerHTML = `
+    <strong style="color:var(--olive-mid);">✓ Google Calendar conectado</strong>
+    <span style="font-size:11px;color:var(--text-light);"> — ${count} evento${count!==1?'s':''} importado${count!==1?'s':''}.</span>
+    <a href="#" onclick="reconnectIcal();return false;" style="color:var(--olive-mid);font-size:11px;margin-left:8px;">↻ Actualizar</a>`;
+  renderAgenda();
+}
+
+function reconnectIcal() {
+  const url = localStorage.getItem('ical-url');
+  if (url) fetchIcal(url);
+}
+
+// Init — load saved URL but don't embed it in source code
+(function() {
+  const savedIcal = localStorage.getItem('ical-url');
+  if (savedIcal) {
+    document.getElementById('ical-url-input').value = savedIcal;
+    fetchIcal(savedIcal);
+  }
+  renderAgenda();
+})();
+
+// ══ TASKS ══
+const defaultTasks = [
+  {text:'Revisar correos',done:false},{text:'Reunión con el equipo',done:false},
+  {text:'Avanzar proyecto AMJA',done:false},{text:'Sesión de fotos',done:false},{text:'Planificar contenido',done:false}
+];
+function loadTasks() { const s = localStorage.getItem('tasks-olga'); return s ? JSON.parse(s) : defaultTasks; }
+function saveTasks() {
+  const tasks = [];
+  document.querySelectorAll('#task-list .task-item').forEach(li => {
+    tasks.push({text: li.querySelector('.task-label').value, done: li.classList.contains('done')});
+  });
+  localStorage.setItem('tasks-olga', JSON.stringify(tasks));
+}
+function appendTaskEl(text, done) {
+  const list = document.getElementById('task-list');
+  const li = document.createElement('li'); li.className = 'task-item' + (done ? ' done' : '');
+  const check = document.createElement('div'); check.className = 'task-check'; check.innerHTML = '✓';
+  check.onclick = () => { li.classList.toggle('done'); saveTasks(); };
+  const label = document.createElement('input'); label.type = 'text'; label.className = 'task-label'; label.value = text;
+  label.addEventListener('change', saveTasks);
+  label.addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); saveTasks(); } });
+  const del = document.createElement('button'); del.className = 'task-delete'; del.innerHTML = '×';
+  del.onclick = () => { li.remove(); saveTasks(); };
+  li.appendChild(check); li.appendChild(label); li.appendChild(del); list.appendChild(li);
+}
+function renderTasks() { document.getElementById('task-list').innerHTML = ''; loadTasks().forEach(t => appendTaskEl(t.text, t.done)); }
+function addTask() {
+  const input = document.getElementById('new-task-input');
+  const text = input.value.trim(); if (!text) return;
+  appendTaskEl(text, false); input.value = ''; saveTasks();
+}
+document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+renderTasks();
+
+// ══ NOTES ══
+const notesEl = document.getElementById('notes-area');
+const sn = localStorage.getItem('notes-olga'); if (sn) notesEl.innerHTML = sn;
+notesEl.addEventListener('input', () => localStorage.setItem('notes-olga', notesEl.innerHTML));
+
+// ══ ADD APP ══
+function addApp() {
+  const name = prompt('Nombre del sitio:');
+  const url = prompt('URL (ej: https://spotify.com):');
+  if (name && url) {
+    const grid = document.getElementById('apps-grid');
+    const full = url.startsWith('http') ? url : 'https://' + url;
+    let domain = ''; try { domain = new URL(full).hostname; } catch(e) { domain = full; }
+    const newApp = document.createElement('a');
+    newApp.href = full; newApp.target = '_blank'; newApp.className = 'app-item';
+    newApp.innerHTML = `<div class="app-icon" style="background:rgba(160,179,86,0.12);"><img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="${name}"></div><span class="app-name">${name}</span>`;
+    grid.insertBefore(newApp, grid.lastElementChild);
+  }
+}
+</script>
+</body>
+</html>
