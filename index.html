@@ -473,6 +473,16 @@ function renderAgenda() {
     const d = new Date(ev.date + 'T00:00:00');
     const item = document.createElement('div');
     item.className = 'agenda-item';
+    item.style.cursor = 'pointer';
+    item.title = 'Abrir en Google Calendar';
+
+    // Click on item → open Google Calendar on that date
+    item.addEventListener('click', (e) => {
+      if (e.target.classList.contains('agenda-del')) return; // don't fire on delete btn
+      const [y, m, dd] = ev.date.split('-');
+      const url = `https://calendar.google.com/calendar/r/day/${y}/${parseInt(m)}/${parseInt(dd)}`;
+      window.open(url, '_blank');
+    });
 
     const badge = document.createElement('div');
     badge.className = 'agenda-date-badge';
@@ -480,11 +490,12 @@ function renderAgenda() {
 
     const info = document.createElement('div');
     info.className = 'agenda-info';
-    info.innerHTML = `<div class="agenda-name">${ev.name}</div>${ev.time ? `<div class="agenda-time">🕐 ${ev.time}</div>` : ''}`;
+    info.innerHTML = `<div class="agenda-name">${ev.name}</div>${ev.time ? `<div class="agenda-time">🕐 ${ev.time}</div>` : '<div class="agenda-time" style="opacity:0.45;font-size:10px;">Todo el día</div>'}`;
 
     const del = document.createElement('button');
-    del.className = 'agenda-del'; del.innerHTML = '×'; del.title = 'Eliminar';
-    del.onclick = () => {
+    del.className = 'agenda-del'; del.innerHTML = '×'; del.title = 'Eliminar evento';
+    del.onclick = (e) => {
+      e.stopPropagation();
       const all = loadEvents();
       const i = all.findIndex(x => x.date === ev.date && x.name === ev.name);
       if (i > -1) all.splice(i,1);
